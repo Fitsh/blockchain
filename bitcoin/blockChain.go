@@ -2,6 +2,7 @@ package main
 
 import (
     "log"
+    "fmt"
     "./bolt"
 )
 
@@ -46,9 +47,14 @@ func NewBlockChain() *BlockChain {
             genesisBlock := GenesisBlock()
 
             // 哈希作为key, block的字节流作为value
-            bucket.Put(genesisBlock.Hash, genesisBlock.toByte())
+            bucket.Put(genesisBlock.Hash, genesisBlock.Serialize())
             bucket.Put([]byte("LastHashKey"), genesisBlock.Hash)
             lastHash = genesisBlock.Hash
+            
+            // 测试
+            blockBytes := bucket.Get(genesisBlock.Hash)
+            block := Deserialize(blockBytes)
+            fmt.Printf("decode %s\n", block)
         } else {
             lastHash = bucket.Get([]byte("LastHashKey"))
         }
