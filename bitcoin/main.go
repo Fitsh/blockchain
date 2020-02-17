@@ -7,6 +7,7 @@ package main
 func main() {
 	bc := NewBlockChain()
 	bc.AddBlock("bc add a block")
+	bc.AddBlock("bc add 2th block")
 
 //	for i, block := range bc.blocks {
 //		fmt.Printf("=============当前区块高度 %d ============\n", i)

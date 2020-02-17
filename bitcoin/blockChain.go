@@ -2,7 +2,6 @@ package main
 
 import (
     "log"
-    "fmt"
     "./bolt"
 )
 
@@ -51,10 +50,10 @@ func NewBlockChain() *BlockChain {
             bucket.Put([]byte("LastHashKey"), genesisBlock.Hash)
             lastHash = genesisBlock.Hash
             
-            // 测试
-            blockBytes := bucket.Get(genesisBlock.Hash)
-            block := Deserialize(blockBytes)
-            fmt.Printf("decode %s\n", block)
+           // // 测试
+           // blockBytes := bucket.Get(genesisBlock.Hash)
+           // block := Deserialize(blockBytes)
+           // fmt.Printf("decode %s\n", block)
         } else {
             lastHash = bucket.Get([]byte("LastHashKey"))
         }
@@ -77,9 +76,26 @@ func (bc *BlockChain) AddBlock(data string) {
 	// 获取最后一个区块
 //	lastBlock := bc.blocks[len(bc.blocks)-1]
 //	prevHash := lastBlock.Hash
+    db:= bc.db
+    lastHash := bc.tail
 //
 //	// a 创建区块
 //	// b 添加到区块链数组中
 //	block := NewBlock(data, prevHash)
 //	bc.blocks = append(bc.blocks, block)
+    
+    block := NewBlock(data, lastHash)
+
+    db.Update(func(tx *bolt.Tx) error {
+
+        bucket := tx.Bucket([]byte(blockBucket))
+        if bucket == nil {
+            log.Panic("bucket 不应该不存在")
+        }
+        bucket.Put(block.Hash, block.Serialize())
+        bucket.Put([]byte("LastHashKey"), block.Hash)
+
+        bc.tail = block.Hash
+        return nil
+    })
 }
