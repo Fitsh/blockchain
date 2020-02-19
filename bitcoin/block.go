@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
-    "encoding/gob"
+	"encoding/gob"
 	"log"
 	"time"
 )
@@ -59,41 +59,42 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 		Data:       []byte(data),
 	}
 
-    //	block.SetHash()
-    // 创建一个pow对像
-   pow := NewProofOfWork(block)
-   // 查找随机数，不停的进行哈希运算
-   hash , nonce := pow.Run()
-   
-   // 根据挖矿结果对区块进行更新补充
-   block.Hash = hash
-   block.Nonce = nonce
+	//	block.SetHash()
+	// 创建一个pow对像
+	pow := NewProofOfWork(block)
+	// 查找随机数，不停的进行哈希运算
+	hash, nonce := pow.Run()
+
+	// 根据挖矿结果对区块进行更新补充
+	block.Hash = hash
+	block.Nonce = nonce
 
 	return block
 }
 
 // 序列化
-func  (block *Block) Serialize() []byte{
-    var buffer bytes.Buffer
-    encoder := gob.NewEncoder(&buffer)
-    err := encoder.Encode(block)
-    if err != nil {
-        log.Panic("编码出错")
-    }
-    return buffer.Bytes()
+func (block *Block) Serialize() []byte {
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+	err := encoder.Encode(block)
+	if err != nil {
+		log.Panic("编码出错")
+	}
+	return buffer.Bytes()
 }
 
 // 反序列化
-func Deserialize(data []byte) *Block {
-    var block Block
-    decoder := gob.NewDecoder(bytes.NewReader(data))
-    err := decoder.Decode(&block)
-    if err != nil {
-        log.Panic("解码出错")
-    }
-    return &block
+func Deserialize(data []byte) Block {
+	var block Block
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	err := decoder.Decode(&block)
+	if err != nil {
+		log.Panic("解码出错")
+	}
+	return block
 
 }
+
 // 3.生成哈希
 func (block *Block) SetHash() {
 	// 1. 拼装数据
