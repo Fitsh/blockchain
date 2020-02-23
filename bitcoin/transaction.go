@@ -27,6 +27,8 @@ type TxOutput struct {
 	PubKeyHash string  // 锁定脚本，我们用地址模拟
 }
 
+const reward = 12.5
+
 // 设置交易ID
 func (tx *Transaction) SetHash() {
 	var buffer bytes.Buffer
@@ -43,5 +45,20 @@ func (tx *Transaction) SetHash() {
 }
 
 // 2. 提供创建交易的方法
+
+func NewCoinBaseTx(address string, data string) *Transaction {
+	//挖矿交易特点
+	// 1. 只有一个input
+	// 2. 无需引用交易id
+	// 3. 无需引用index
+	// 矿工由于挖矿时无需指定签名，所以这个 sig字段可以由矿工自由填写数据，一般是填写矿池的名字
+	input := TxInput{[]byte{}, -1, data}
+	output := TxOutput{reward, address}
+	tx := &Transaction{[]byte{}, []TxInput{input}, []TxOutput{output}}
+	tx.SetHash()
+
+	return tx
+}
+
 // 3. 创建挖矿交易
 // 4. 根据交易调整程序
