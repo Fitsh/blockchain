@@ -10,7 +10,7 @@ import (
 // 1. 定义交易结构
 type Transaction struct {
 	TXID      []byte     // 交易ID
-	TxInPuts  []TxInput  //  交易输入数组
+	TxInputs  []TxInput  //  交易输入数组
 	TxOutputs []TxOutput // 交易输出数组
 }
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
+	//	"crypto/sha256"
 	"encoding/binary"
 	"encoding/gob"
 	"log"
@@ -27,7 +27,10 @@ type Block struct {
 	// a.当前区块哈希,正常比特币区块中没有当前区块的哈希，我们是为了方便做了简化
 	Hash []byte
 	// b.数据
-	Data []byte
+	//	Data []byte
+
+	// 真实的交易数组
+	Transactions []*Transaction
 }
 
 //1. 补充区块字段
@@ -47,7 +50,7 @@ func Uint64ToByte(num uint64) []byte {
 }
 
 // 2.创建区块
-func NewBlock(data string, prevBlockHash []byte) *Block {
+func NewBlock(txs []*Transaction, prevBlockHash []byte) *Block {
 	block := &Block{
 		Version:    00,
 		PrevHash:   prevBlockHash,
@@ -56,8 +59,11 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 		Difficulty: 0,
 		Nonce:      0,
 		Hash:       []byte{}, // 先填空，后面在计算
-		Data:       []byte(data),
+		//	Data:       []byte(data),
+		Transactions: txs,
 	}
+
+	block.MerkelRoot = block.MakeMerkelRoot()
 
 	//	block.SetHash()
 	// 创建一个pow对像
@@ -95,33 +101,40 @@ func Deserialize(data []byte) Block {
 
 }
 
-// 3.生成哈希
-func (block *Block) SetHash() {
-	// 1. 拼装数据
-	//	var blockInfo []byte
-	//	blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
-	//	blockInfo = append(blockInfo, block.PrevHash...)
-	//	blockInfo = append(blockInfo, block.MerkelRoot...)
-	//	blockInfo = append(blockInfo, Uint64ToByte(block.TimeStamp)...)
-	//	blockInfo = append(blockInfo, Uint64ToByte(block.Difficulty)...)
-	//	blockInfo = append(blockInfo, Uint64ToByte(block.Nonce)...)
-	//	blockInfo = append(blockInfo, block.Data...)
+// // 3.生成哈希
+// func (block *Block) SetHash() {
+// 	// 1. 拼装数据
+// 	//	var blockInfo []byte
+// 	//	blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
+// 	//	blockInfo = append(blockInfo, block.PrevHash...)
+// 	//	blockInfo = append(blockInfo, block.MerkelRoot...)
+// 	//	blockInfo = append(blockInfo, Uint64ToByte(block.TimeStamp)...)
+// 	//	blockInfo = append(blockInfo, Uint64ToByte(block.Difficulty)...)
+// 	//	blockInfo = append(blockInfo, Uint64ToByte(block.Nonce)...)
+// 	//	blockInfo = append(blockInfo, block.Data...)
+//
+// 	tmp := [][]byte{
+// 		Uint64ToByte(block.Version),
+// 		block.PrevHash,
+// 		block.MerkelRoot,
+// 		Uint64ToByte(block.TimeStamp),
+// 		Uint64ToByte(block.Difficulty),
+// 		Uint64ToByte(block.Nonce),
+// 		block.Data,
+// 	}
+// 	// 将二维的切片连接起来，返回一个一维的切片
+// 	blockInfo := bytes.Join(tmp, []byte{})
+//
+// 	// 2. sha256
+// 	// func Sum256(data []byte) [size]byte
+// 	hash := sha256.Sum256(blockInfo)
+//
+// 	block.Hash = hash[:]
+// }
 
-	tmp := [][]byte{
-		Uint64ToByte(block.Version),
-		block.PrevHash,
-		block.MerkelRoot,
-		Uint64ToByte(block.TimeStamp),
-		Uint64ToByte(block.Difficulty),
-		Uint64ToByte(block.Nonce),
-		block.Data,
-	}
-	// 将二维的切片连接起来，返回一个一维的切片
-	blockInfo := bytes.Join(tmp, []byte{})
+// 模拟梅克尔根
+func (block *Block) MakeMerkelRoot() []byte {
+	// TODO
 
-	// 2. sha256
-	// func Sum256(data []byte) [size]byte
-	hash := sha256.Sum256(blockInfo)
-
-	block.Hash = hash[:]
+	return []byte{}
 }
