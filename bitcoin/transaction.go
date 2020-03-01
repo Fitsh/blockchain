@@ -47,17 +47,15 @@ func (tx *Transaction) SetHash() {
 // 提供一个方法，判断当前的交易是否是挖矿交易
 func (tx *Transaction) IsCoinBaseTx() bool {
 	// 交易input只有一个
+	// 交易Id为空
+	// 交易index为-1
 	if len(tx.TxInputs) == 1 {
 		input := tx.TxInputs[0]
-		// 交易Id为空
-		// 交易index为-1
-		if !bytes.Equal(input.Txid, []byte{}) || input.Index != -1 {
-			return false
+		if bytes.Equal(input.Txid, []byte{}) && input.Index == -1 {
+			return true
 		}
-	} else {
-		return false
 	}
-	return true
+	return false
 }
 
 // 2. 提供创建交易的方法
@@ -78,12 +76,12 @@ func NewCoinBaseTx(address string, data string) *Transaction {
 
 // 创建普通的转账交易
 
-func NewTransaction(from, to, string, amount float64, bc *BlockChain) *Transaction {
+func NewTransaction(from, to string, amount float64, bc *BlockChain) *Transaction {
 	// 1. 找到合适的UTXO集合 map[string][]uint64
 	utxos, resValue := bc.FindNeedUTXOs(from, amount)
 
 	if resValue < amount {
-		fmt.Prntf("余额不足~\n")
+		log.Printf("余额不足~\n")
 		return nil
 	}
 
