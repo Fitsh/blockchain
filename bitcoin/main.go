@@ -5,7 +5,7 @@ package main
 // 8.重构代码
 
 func main() {
-	bc := NewBlockChain("ban zhang")
+	bc := NewBlockChain("张三")
 	cli := CLI{bc}
 	cli.Run()
 	//	bc.AddBlock("bc add a block")

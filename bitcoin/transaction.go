@@ -27,7 +27,7 @@ type TxOutput struct {
 	PubKeyHash string  // 锁定脚本，我们用地址模拟
 }
 
-const reward = 12.5
+const reward = 50
 
 // 设置交易ID
 func (tx *Transaction) SetHash() {
