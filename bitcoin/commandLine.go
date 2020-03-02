@@ -60,3 +60,9 @@ func (cli *CLI) Send(from, to string, amount float64, miner, data string) {
 	cli.bc.AddBlock([]*Transaction{coinbase, tx})
 	fmt.Printf("转账成功~")
 }
+
+func (cli *CLI) NewWallet() {
+	wallet := NewWallet()
+	fmt.Printf("私钥: %v\n", wallet.PrivateKey)
+	fmt.Printf("公钥: %x\n", wallet.PubKey)
+}
