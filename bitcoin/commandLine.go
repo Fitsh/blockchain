@@ -65,9 +65,8 @@ func (cli *CLI) NewWallet() {
 	//	wallet := NewWallet()
 	//	address := wallet.NewAddress()
 	wallets := NewWallets()
-	for address := range wallets.WalletMap {
-		fmt.Printf("Address: %s\n", address)
-	}
+	address := wallets.CreateWallet()
+	fmt.Printf("Address: %s\n", address)
 	//	fmt.Printf("私钥: %v\n", wallet.PrivateKey)
 	//	fmt.Printf("公钥: %x\n", wallet.PubKey)
 	//	fmt.Printf("Address: %s\n", address)
