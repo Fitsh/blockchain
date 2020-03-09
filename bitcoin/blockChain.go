@@ -134,7 +134,7 @@ func (bc *BlockChain) PrintChain() {
 			fmt.Printf("难度值: %d\n", block.Difficulty)
 			fmt.Printf("随机数: %d\n", block.Nonce)
 			fmt.Printf("当前区块哈希: %x\n", block.Hash)
-			fmt.Printf("数据: %s\n\n", block.Transactions[0].TxInputs[0].Sig)
+			fmt.Printf("数据: %s\n\n", block.Transactions[0].TxInputs[0].PubKey)
 
 			return nil
 		})
@@ -143,14 +143,14 @@ func (bc *BlockChain) PrintChain() {
 }
 
 // 找到指定地址的所有的utxo
-func (bc *BlockChain) FindUTXOs(address string) []TxOutput {
+func (bc *BlockChain) FindUTXOs(pubKeyHash []byte) []TxOutput {
 	var UTXO []TxOutput
 
-	txs := bc.FindUTXOTransactions(address)
+	txs := bc.FindUTXOTransactions(pubKeyHash)
 
 	for _, tx := range txs {
 		for _, output := range tx.TxOutputs {
-			if output.PubKeyHash == address {
+			if bytes.Equal(output.PubKeyHash, pubKeyHash) {
 				UTXO = append(UTXO, output)
 			}
 		}
@@ -205,17 +205,19 @@ func (bc *BlockChain) FindUTXOs(address string) []TxOutput {
 }
 
 // 根据需求找到合理的utxo
-func (bc *BlockChain) FindNeedUTXOs(from string, amount float64) (map[string][]int64, float64) {
+func (bc *BlockChain) FindNeedUTXOs(senderPubKeyHash []byte, amount float64) (map[string][]int64, float64) {
 	//找到的合理的utxo集合
 	utxos := make(map[string][]int64)
 	// 找到的utxo里包含的总数
 	var calc float64
 
-	txs := bc.FindUTXOTransactions(from)
+	txs := bc.FindUTXOTransactions(senderPubKeyHash)
 
 	for _, tx := range txs {
 		for i, output := range tx.TxOutputs {
-			if output.PubKeyHash == from {
+			// 直接比较是否相同， 返回true或false
+
+			if bytes.Equal(output.PubKeyHash, senderPubKeyHash) {
 				// 找到自己需要的最少的utxos
 				calc += output.Value
 				utxos[string(tx.TXID)] = append(utxos[string(tx.TXID)], int64(i))
@@ -276,7 +278,7 @@ func (bc *BlockChain) FindNeedUTXOs(from string, amount float64) (map[string][]i
 	return utxos, calc
 }
 
-func (bc *BlockChain) FindUTXOTransactions(address string) []*Transaction {
+func (bc *BlockChain) FindUTXOTransactions(senderPubKeyHash []byte) []*Transaction {
 	var txs []*Transaction // 存储所有包含utxo的交易集合
 
 	//	// map[交易Id][]int64
@@ -301,7 +303,7 @@ func (bc *BlockChain) FindUTXOTransactions(address string) []*Transaction {
 						}
 					}
 				}
-				if output.PubKeyHash == address {
+				if bytes.Equal(output.PubKeyHash, senderPubKeyHash) {
 					// 返回所有包含我的utxo交易的集合
 					txs = append(txs, tx)
 				}
@@ -311,7 +313,10 @@ func (bc *BlockChain) FindUTXOTransactions(address string) []*Transaction {
 				// 如果当前交易是挖矿交易，那么不做遍历，直接跳过
 				for _, input := range tx.TxInputs {
 					// 遍历input，找到自己花费过的input集合（把自己消耗过的标识出来）
-					if input.Sig == address {
+					pubKeyHash := HashPubKey(input.PubKey)
+					if bytes.Equal(pubKeyHash, senderPubKeyHash) {
+						//if input.Sig == address {
+
 						spentOutputs[string(input.Txid)] = append(spentOutputs[string(input.Txid)], input.Index)
 					}
 				}
