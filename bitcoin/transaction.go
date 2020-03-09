@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
-	"github.com/btcsuite/btcutil/base58"
 	"log"
 )
 
@@ -38,13 +37,8 @@ type TxOutput struct {
 func (output *TxOutput) Lock(address string) {
 	// 解码
 	// 取出公钥哈希：去除version(1字节),去除校验码(4字节)
-	log.Printf("address %s\n", address)
-	addressBytes := base58.Decode(address)
-	length := len(addressBytes)
 
-	log.Printf("address %x\n", addressBytes)
-	pubKeyHash := addressBytes[1 : length-4]
-
+	pubKeyHash := GetPubKeyHashFromAddress(address)
 	// 真正的锁定动作
 	output.PubKeyHash = pubKeyHash
 }
