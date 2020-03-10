@@ -36,6 +36,10 @@ func (cli *CLI) PrintBlockChainReverse() {
 
 func (cli *CLI) GetBalance(address string) {
 	// 校验地址，
+	if !IsValidAddress(address) {
+		fmt.Printf("地址无效： %s\n", address)
+		return
+	}
 	// 生成公钥哈希
 	pubKeyHash := GetPubKeyHashFromAddress(address)
 	utxos := cli.bc.FindUTXOs(pubKeyHash)
@@ -49,6 +53,20 @@ func (cli *CLI) GetBalance(address string) {
 }
 
 func (cli *CLI) Send(from, to string, amount float64, miner, data string) {
+	if !IsValidAddress(from) {
+		fmt.Printf("from地址无效： %s\n", from)
+		return
+	}
+
+	if !IsValidAddress(to) {
+		fmt.Printf("to地址无效： %s\n", to)
+		return
+	}
+
+	if !IsValidAddress(miner) {
+		fmt.Printf("miner地址无效： %s\n", miner)
+		return
+	}
 
 	// 具体逻辑
 	// 挖矿交易

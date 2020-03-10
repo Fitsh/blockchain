@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -83,4 +84,21 @@ func CheckSum(data []byte) []byte {
 	checkCode := hash2[:4]
 
 	return checkCode
+}
+
+func IsValidAddress(address string) bool {
+	// 解码
+	addressBytes := base58.Decode(address)
+
+	if len(addressBytes) < 4 {
+		return false
+	}
+
+	// 取数据
+	payload := addressBytes[:len(addressBytes)-4]
+	checkSum := addressBytes[len(addressBytes)-4:]
+	// checksum
+	newCheckSum := CheckSum(payload)
+	// 比较
+	return bytes.Equal(checkSum, newCheckSum)
 }

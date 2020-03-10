@@ -119,9 +119,8 @@ func NewTransaction(from, to string, amount float64, bc *BlockChain) *Transactio
 	// privateKey := wallet.PrivateKey
 
 	// 1. 找到合适的UTXO集合 map[string][]uint64
-	//hash := HashPubKey(pubKey)
-	// utxos, resValue := bc.FindNeedUTXOs(hash[:], amount)
-	utxos, resValue := make(map[string][]int64), 0.0
+	hash := HashPubKey(pubKey)
+	utxos, resValue := bc.FindNeedUTXOs(hash[:], amount)
 
 	if resValue < amount {
 		log.Printf("余额不足~\n")
