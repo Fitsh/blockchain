@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -79,6 +81,14 @@ func GenesisBlock(address string) *Block {
 
 // 5.添加区块
 func (bc *BlockChain) AddBlock(txs []*Transaction) {
+
+	for _, tx := range txs {
+		if !bc.VerifyTransaction(tx) {
+			fmt.Printf("矿工发现无效交易\n")
+			return
+		}
+	}
+
 	// 获取最后一个区块
 	//	lastBlock := bc.blocks[len(bc.blocks)-1]
 	//	prevHash := lastBlock.Hash
@@ -327,4 +337,77 @@ func (bc *BlockChain) FindUTXOTransactions(senderPubKeyHash []byte) []*Transacti
 		}
 	}
 	return txs
+}
+
+// 根据交易Id查找交易本身，需要遍历整个区块链
+func (bc *BlockChain) FindTransactionByTXid(txid []byte) (Transaction, error) {
+	// 遍历区块链
+	// 遍历交易
+	// 比较交易，找到直接退出
+	// 如果没找到，返回空Transaction，同时返回错误状态
+	it := bc.NewBlockChainIterator()
+
+	for {
+		block := it.Next()
+
+		for _, tx := range block.Transactions {
+			if bytes.Equal(tx.TXID, txid) {
+				return *tx, nil
+			}
+		}
+
+		if len(block.PrevHash) == 0 {
+			break
+		}
+	}
+
+	return Transaction{}, errors.New("交易没找到 ")
+}
+
+func (bc *BlockChain) SignTransaction(tx *Transaction, privateKey *ecdsa.PrivateKey) {
+	//	签名，交易创建的最后进行签名
+	prevTxs := make(map[string]Transaction)
+
+	// 找到所有引用的交易
+	// 1. 根据inputs来找，有多少个input,就遍历多少次
+	// 2. 找到目标交易，（根据txid来找）
+	// 3. 添加到prevTxs
+
+	for _, input := range tx.TxInputs {
+		// 根据交易Id查找交易本身，需要遍历整个区块链
+		tx, err := bc.FindTransactionByTXid(input.Txid)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		prevTxs[string(input.Txid)] = tx
+	}
+
+	tx.Sign(privateKey, prevTxs)
+
+}
+
+func (bc *BlockChain) VerifyTransaction(tx *Transaction) bool {
+	if tx.IsCoinBaseTx() {
+		return true
+	}
+
+	prevTxs := make(map[string]Transaction)
+
+	// 找到所有引用的交易
+	// 1. 根据inputs来找，有多少个input,就遍历多少次
+	// 2. 找到目标交易，（根据txid来找）
+	// 3. 添加到prevTxs
+
+	for _, input := range tx.TxInputs {
+		// 根据交易Id查找交易本身，需要遍历整个区块链
+		tx, err := bc.FindTransactionByTXid(input.Txid)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		prevTxs[string(input.Txid)] = tx
+	}
+
+	return tx.Verify(prevTxs)
 }
